@@ -1,3 +1,10 @@
+Metadata-Version: 2.4
+Name: mazegen-a-maze-ing
+Version: 1.0.0
+Summary: Simple maze generator with centered 42 pattern
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+
 *This project has been created as part of the 42 curriculum by mostafa.*
 
 # A-Maze-ing
@@ -92,7 +99,7 @@ Why this algorithm:
 - Produces coherent mazes with valid wall consistency.
 - Naturally gives a perfect maze when enabled.
 
-When `PERFECT=False`, generation still works with the same simple core algorithm.
+When `PERFECT=False`, extra openings are added to create loops.
 
 ## 42 Pattern Rule
 The "42" shape is hardcoded and centered in the maze using fully closed cells.
