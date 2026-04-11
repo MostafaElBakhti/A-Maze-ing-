@@ -147,3 +147,5 @@ print_maze(grid)
 # print(f"unvisited neighbors of (1, 1): {list(unvisited.keys())}")
 # grid = generate_maze(3, 3)
 
+# https://www.youtube.com/watch?v=zyQxzMa_DtQ&t=1811s   50min
+
