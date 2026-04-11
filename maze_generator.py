@@ -13,7 +13,10 @@ class Cell:
         self.visited = False
 
 
-def generate_maze(width, height):
+def generate_maze(width, height, seed=None):
+
+    if seed is not None:
+        random.seed(seed)
 
     grid = []
 
@@ -25,10 +28,10 @@ def generate_maze(width, height):
 
     return grid
 
-grid = generate_maze(3, 3)
+grid = generate_maze(20, 9, seed=None)
 
-for row in grid:
-    print([f"({cell.x}, {cell.y})" for cell in row])
+# for row in grid:
+#     print([f"({cell.x}, {cell.y})" for cell in row])
 
 print("----------------")
 
@@ -78,50 +81,69 @@ def get_unvisited_neighbors(cell , grid):
 
     return unvisited
 
-unvisited = get_unvisited_neighbors(cell, grid)
-print(f"unvisited neighbors of (0, 0): {list(unvisited.keys())}")
 
-cell = grid[0][1]
-
-unvisited = get_unvisited_neighbors(cell, grid)
-print(f"unvisited neighbors of (0, 1): {list(unvisited.keys())}")
+# grid = generate_maze(13, 10, seed=42)
+cell = grid[0][0]
 cell.visited = True
-cell = grid[1][1]
-unvisited = get_unvisited_neighbors(cell, grid)
-print(f"unvisited neighbors of (1, 1): {list(unvisited.keys())}")
-# grid = generate_maze(3, 3)
 
-# for row in grid:
-#     print([f"({cell.x}, {cell.y})" for cell in row])
+stack = [cell]
 
-# cell = grid[0][0]
-# neighbor  = grid[0][1]
+while stack:
+    current = stack[-1]
 
-# print(cell.walls)
-# print(neighbor.walls)
-# open_wall(cell, neighbor, "E")
-# print()
-# print(cell.walls)
-# print(neighbor.walls)
-# print("----------------")
-# neighbors = get_neighbors(cell, grid)
-# print(list(neighbors))
-# print(f"Neighbors of (1, 0): {list(neighbors.keys())}")
-# for dir, nei in neighbors.items():
-#     print(f"Direction: {dir}, Neighbor: ({nei.x}, {nei.y})")
+    unvisited = get_unvisited_neighbors(current, grid)
 
+    if unvisited:
+        direction, next_cell = random.choice(list(unvisited.items()))
+        open_wall(current, next_cell, direction)
+        next_cell.visited = True
+        stack.append(next_cell)
+    else:
+        stack.pop()
+
+
+
+def print_maze(grid):
+    width = len(grid[0])
+    height = len(grid)
+
+    # top border
+    print("+" + "---+" * width)
+
+    for y in range(height):
+        # walls (vertical)
+        row = "|"
+        for x in range(width):
+            cell = grid[y][x]
+            if cell.walls["E"]:
+                row += "   |"
+            else:
+                row += "    "
+        print(row)
+
+        # bottom walls
+        row = "+"
+        for x in range(width):
+            cell = grid[y][x]
+            if cell.walls["S"]:
+                row += "---+"
+            else:
+                row += "   +"
+        print(row)
+
+
+print_maze(grid)
+
+# unvisited = get_unvisited_neighbors(cell, grid)
+# print(f"unvisited neighbors of (0, 0): {list(unvisited.keys())}")
+
+# cell = grid[0][1]
+
+# unvisited = get_unvisited_neighbors(cell, grid)
+# print(f"unvisited neighbors of (0, 1): {list(unvisited.keys())}")
 # cell.visited = True
-
-# for row in grid:
-#     for cell in row:
-#         print(f"{cell.visited}")
-
-
-    # def get_invisible_neighbors(cell, grid):
-    # neighbors = get_neighbors(cell, grid)
-
-    # invisited_neighbors = {}
-
-    # for direction in neighbors: 
-
+# cell = grid[1][1]
+# unvisited = get_unvisited_neighbors(cell, grid)
+# print(f"unvisited neighbors of (1, 1): {list(unvisited.keys())}")
+# grid = generate_maze(3, 3)
 
