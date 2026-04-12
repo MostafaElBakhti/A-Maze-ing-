@@ -28,10 +28,10 @@ def generate_maze(width, height, seed=None):
 
     return grid
 
-grid = generate_maze(20, 9, seed=None)
+grid = generate_maze(15, 7, seed=None)
 
-# for row in grid:
-#     print([f"({cell.x}, {cell.y})" for cell in row])
+for row in grid:
+    print([f"({cell.x}, {cell.y})" for cell in row])
 
 print("----------------")
 
@@ -67,7 +67,7 @@ def open_wall(cell, neighbor, direction):
 cell = grid[0][0]
 neighbor = get_neighbors(cell, grid)
 
-print(list(neighbor))
+# print(list(neighbor))
 
 def get_unvisited_neighbors(cell , grid):
     neighbors = get_neighbors(cell, grid)
@@ -83,52 +83,84 @@ def get_unvisited_neighbors(cell , grid):
 
 
 # grid = generate_maze(13, 10, seed=42)
-cell = grid[0][0]
-cell.visited = True
+def carve_maze(grid, start_cell):
+    cell = start_cell
+    cell.visited = True
 
-stack = [cell]
+    stack = [cell]
 
-while stack:
-    current = stack[-1]
+    while stack:
+        current = stack[-1]
 
-    unvisited = get_unvisited_neighbors(current, grid)
+        unvisited = get_unvisited_neighbors(current, grid)
 
-    if unvisited:
-        direction, next_cell = random.choice(list(unvisited.items()))
-        open_wall(current, next_cell, direction)
-        next_cell.visited = True
-        stack.append(next_cell)
-    else:
-        stack.pop()
+        if unvisited:
+            direction, next_cell = random.choice(list(unvisited.items()))
+            open_wall(current, next_cell, direction)
+            next_cell.visited = True
+            stack.append(next_cell)
+        else:
+            stack.pop()
 
 
+start = grid[0][0]
+carve_maze(grid, start)
 
 def print_maze(grid):
     width = len(grid[0])
     height = len(grid)
 
-    # top border
-    print("+" + "---+" * width)
-
+    # ANSI color codes for prettier display
+    COLOR_WALL = "\033[94m"      # Blue for walls
+    COLOR_PATH = "\033[92m"      # Green for paths
+    COLOR_RESET = "\033[0m"      # Reset color
+    
+    # Unicode box-drawing characters
+    TOP_LEFT = "╔"
+    TOP_RIGHT = "╗"
+    BOT_LEFT = "╚"
+    BOT_RIGHT = "╝"
+    H_LINE = "═"
+    V_LINE = "║"
+    CROSS = "╬"
+    T_DOWN = "╦"
+    T_UP = "╩"
+    T_RIGHT = "╠"
+    T_LEFT = "╣"
+    CELL_OPEN = " "
+    CELL_WALL = "█"
+    
+    # Top border with prettier style
+    print(COLOR_WALL + TOP_LEFT + (H_LINE * 3 + T_DOWN) * (width - 1) + H_LINE * 3 + TOP_RIGHT + COLOR_RESET)
+    
     for y in range(height):
-        # walls (vertical)
-        row = "|"
+        # Cell row with vertical walls
+        row = COLOR_WALL + V_LINE + COLOR_RESET
         for x in range(width):
             cell = grid[y][x]
+            # Cell content (open space)
+            row += COLOR_PATH + " • " + COLOR_RESET
+            # Right wall of cell
             if cell.walls["E"]:
-                row += "   |"
+                row += COLOR_WALL + V_LINE + COLOR_RESET
             else:
-                row += "    "
+                row += " "
         print(row)
-
-        # bottom walls
-        row = "+"
+        
+        # Horizontal wall row
+        row = COLOR_WALL + T_RIGHT + COLOR_RESET
         for x in range(width):
             cell = grid[y][x]
+            # Bottom wall of cell
             if cell.walls["S"]:
-                row += "---+"
+                row += COLOR_WALL + H_LINE * 3 + COLOR_RESET
             else:
-                row += "   +"
+                row += COLOR_PATH + "   " + COLOR_RESET
+            # Corner/junction
+            if x < width - 1:
+                row += COLOR_WALL + CROSS + COLOR_RESET
+            else:
+                row += COLOR_WALL + T_LEFT + COLOR_RESET
         print(row)
 
 
