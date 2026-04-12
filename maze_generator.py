@@ -103,8 +103,24 @@ def carve_maze(grid, start_cell):
             stack.pop()
 
 
+def is_all_visited(grid) -> bool:
+    for row in grid:
+        for cell in row:
+            if not cell.visited:
+                return False
+    return True
+
+
+check = is_all_visited(grid)
+print(f"All cells visited: {check}")
+
 start = grid[0][0]
 carve_maze(grid, start)
+
+check = is_all_visited(grid)
+print(f"All cells visited: {check}")
+
+
 
 def print_maze(grid):
     width = len(grid[0])
