@@ -30,7 +30,7 @@ def generate_maze(width, height, seed=None):
 
     return grid
 
-grid = generate_maze(22, 15, seed=None)
+grid = generate_maze(17, 15, seed=None)
 
 for row in grid:
     print([f"({cell.x}, {cell.y})" for cell in row])
@@ -111,7 +111,7 @@ def is_all_non_locked_visited(grid):
     for row in grid:
         for cell in row:
             if not cell.locked and not cell.visited:
-                print(f"❌ Not visited: ({cell.x},{cell.y})")
+                print(f" Not visited: ({cell.x},{cell.y})")
                 return False
     return True
 
@@ -141,6 +141,10 @@ def is_3x3_open(grid,x,y):
                 return False
     return True
 
+def test_open_are(grid) :
+    if(has_3x3_area(grid)):
+        print("found 3x3 are")
+    print("no 3x3 area found")
 # check = is_all_visited(grid)
 # print(f"All cells visited: {check}")
 
@@ -220,33 +224,37 @@ def close_cell(grid, cell):
         grid[y][x+1].walls['W'] = True
 
 
-def bfs_path_exists(grid, start, target):
-    queue = deque([start])
-    visited = set()
 
-    while queue:
-        cell = queue.popleft()
+test_open_are(grid)
+# def bfs_path_exists(grid, start, target):
+#     queue = deque([start])
+#     visited = set()
 
-        if (cell.x, cell.y) in visited:
-            continue
-        visited.add((cell.x, cell.y))
+#     while queue:
+#         cell = queue.popleft()
 
-        """we found the target, path exists"""
-        if cell == target:
-            return True
+#         if (cell.x, cell.y) in visited:
+#             continue
+#         visited.add((cell.x, cell.y))
 
-        neighbors = get_neighbors(cell, grid)
+#         """we found the target, path exists"""
+#         if cell == target:
+#             return True
 
-        for direction, neighbor in neighbors.items():
+#         neighbors = get_neighbors(cell, grid)
+
+#         for direction, neighbor in neighbors.items():
             
-            if not cell.walls[direction] and not neighbor.locked:
-                if (neighbor.x, neighbor.y) not in visited:
-                    queue.append(neighbor)
+#             if not cell.walls[direction] and not neighbor.locked:
+#                 if (neighbor.x, neighbor.y) not in visited:
+#                     queue.append(neighbor)
 
-    return False
+#     return False
 
-
-place_42(grid)
+try:
+    place_42(grid)
+except ValueError as e:
+    print(f"Error placing 42 pattern: {e}")
 
 
 
@@ -277,7 +285,7 @@ print("All NON-LOCKED visited:", is_all_non_locked_visited(grid))
 entry = grid[0][0]
 exit = grid[len(grid) - 1][len(grid[0]) - 1]
 
-print("Path exists:", bfs_path_exists(grid, entry, exit))
+# print("Path exists:", bfs_path_exists(grid, entry, exit))
 
 
 
