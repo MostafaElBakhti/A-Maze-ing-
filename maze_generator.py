@@ -1,4 +1,5 @@
 import random
+from collections import deque
 
 class Cell:
     def __init__(self, x, y):
@@ -29,7 +30,7 @@ def generate_maze(width, height, seed=None):
 
     return grid
 
-grid = generate_maze(10, 17, seed=42)
+grid = generate_maze(22, 15, seed=None)
 
 for row in grid:
     print([f"({cell.x}, {cell.y})" for cell in row])
@@ -62,8 +63,8 @@ OPPOSITE = {
 }
 
 def open_wall(cell, neighbor, direction):
-    if neighbor.locked:
-        return
+    # if neighbor.locked:
+    #     return
     cell.walls[direction] = False
     neighbor.walls[OPPOSITE[direction]] = False
 
@@ -106,10 +107,11 @@ def carve_maze(grid, start_cell):
             stack.pop()
 
 
-def is_all_visited(grid) -> bool:
+def is_all_non_locked_visited(grid):
     for row in grid:
         for cell in row:
-            if not cell.visited:
+            if not cell.locked and not cell.visited:
+                print(f"❌ Not visited: ({cell.x},{cell.y})")
                 return False
     return True
 
@@ -139,12 +141,12 @@ def is_3x3_open(grid,x,y):
                 return False
     return True
 
-check = is_all_visited(grid)
-print(f"All cells visited: {check}")
+# check = is_all_visited(grid)
+# print(f"All cells visited: {check}")
 
 
-check = is_all_visited(grid)
-print(f"All cells visited: {check}")
+# check = is_all_visited(grid)
+# print(f"All cells visited: {check}")
 
 # :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: #
 # :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: #
@@ -171,9 +173,16 @@ def place_42(grid):
     height_p = 5
     gap = 2
 
-    total_width = width_4 + gap + width_2
+    pattern_width = width_4 + gap + width_2  # = 8
 
-    start_x = (width - total_width) // 2
+    """ calcul padding to center the pattern in the maze """
+    padding = (width - pattern_width) // 2
+
+
+    if padding < 2:
+        raise ValueError("Maze too tight for 42 pattern minimum (12, 9)")
+
+    start_x = padding
     start_y = (height - height_p) // 2
 
     # place 4
@@ -211,6 +220,32 @@ def close_cell(grid, cell):
         grid[y][x+1].walls['W'] = True
 
 
+def bfs_path_exists(grid, start, target):
+    queue = deque([start])
+    visited = set()
+
+    while queue:
+        cell = queue.popleft()
+
+        if (cell.x, cell.y) in visited:
+            continue
+        visited.add((cell.x, cell.y))
+
+        """we found the target, path exists"""
+        if cell == target:
+            return True
+
+        neighbors = get_neighbors(cell, grid)
+
+        for direction, neighbor in neighbors.items():
+            
+            if not cell.walls[direction] and not neighbor.locked:
+                if (neighbor.x, neighbor.y) not in visited:
+                    queue.append(neighbor)
+
+    return False
+
+
 place_42(grid)
 
 
@@ -236,10 +271,26 @@ def check_pattern_strict(grid):
 
 
 check_pattern_strict(grid)
+print("All NON-LOCKED visited:", is_all_non_locked_visited(grid))
+
+
+entry = grid[0][0]
+exit = grid[len(grid) - 1][len(grid[0]) - 1]
+
+print("Path exists:", bfs_path_exists(grid, entry, exit))
 
 
 
-
+# :::::::::::::::::::: #
+# :::::::::::::::::::: #
+# :::::::::::::::::::: # :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: #
+# :::::::::::::::::::: #
+# :::::::::::::::::::: # :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: #
+# :::::::::::::::::::: #
+# :::::::::::::::::::: # :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: #
+# :::::::::::::::::::: #
+# :::::::::::::::::::::#
+#       Display       #
 
 
 def print_maze(grid):
@@ -320,3 +371,4 @@ print_maze(grid)
 
 # https://www.youtube.com/watch?v=zyQxzMa_DtQ&t=1811s   50min
 
+#ba9i khas 3x3 , perfect , bfs , output file 
