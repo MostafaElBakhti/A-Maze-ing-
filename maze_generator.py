@@ -111,6 +111,31 @@ def is_all_visited(grid) -> bool:
     return True
 
 
+
+def has_3x3_area(grid) -> bool:
+
+    height = len(grid)
+    width = len(grid[0])
+    
+    for y in range(height - 2):
+        for x in range(width - 2):
+            if is_3x3_open(grid,x,y):
+                return True
+    
+    return False
+
+
+def is_3x3_open(grid,x,y):
+    for dy in range(3):
+        for dx in range(3):
+            cell = grid[y + dy][x + dx]
+            
+            if dx < 2 and cell.walls["E"]:
+                return False
+            if dy < 2 and cell.walls["S"]:
+                return False
+    return True
+
 check = is_all_visited(grid)
 print(f"All cells visited: {check}")
 
