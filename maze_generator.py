@@ -11,6 +11,7 @@ class Cell:
             'W': True
         }
         self.visited = False
+        self.locked = False
 
 
 def generate_maze(width, height, seed=None):
@@ -28,7 +29,7 @@ def generate_maze(width, height, seed=None):
 
     return grid
 
-grid = generate_maze(15, 7, seed=None)
+grid = generate_maze(10, 17, seed=42)
 
 for row in grid:
     print([f"({cell.x}, {cell.y})" for cell in row])
@@ -61,6 +62,8 @@ OPPOSITE = {
 }
 
 def open_wall(cell, neighbor, direction):
+    if neighbor.locked:
+        return
     cell.walls[direction] = False
     neighbor.walls[OPPOSITE[direction]] = False
 
@@ -76,7 +79,7 @@ def get_unvisited_neighbors(cell , grid):
 
     for direction, neighbor in neighbors.items():
         """means that the neighbor is unvisited == false"""
-        if not neighbor.visited: 
+        if not neighbor.visited and not neighbor.locked and not cell.locked: 
             unvisited[direction] = neighbor
 
     return unvisited
@@ -139,11 +142,103 @@ def is_3x3_open(grid,x,y):
 check = is_all_visited(grid)
 print(f"All cells visited: {check}")
 
-start = grid[0][0]
-carve_maze(grid, start)
 
 check = is_all_visited(grid)
 print(f"All cells visited: {check}")
+
+# :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: #
+# :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: #
+# :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: #
+
+def place_42(grid):
+    height = len(grid)
+    width = len(grid[0])
+
+    coords_4 = [
+        (0,0),(0,1),(0,2),(1,2),(2,2),(2,3),(2,4)
+    ]
+
+    coords_2 = [
+        (0,0),(1,0),(2,0),
+                (2,1),
+        (0,2),(1,2),(2,2),
+        (0,3),
+        (0,4),(1,4),(2,4)
+    ]
+
+    width_4 = 3
+    width_2 = 3
+    height_p = 5
+    gap = 2
+
+    total_width = width_4 + gap + width_2
+
+    start_x = (width - total_width) // 2
+    start_y = (height - height_p) // 2
+
+    # place 4
+    for x, y in coords_4:
+        cell = grid[start_y + y][start_x + x]
+        close_cell(grid, cell)
+
+    # place 2
+    offset_x = width_4 + gap
+    for x, y in coords_2:
+        cell = grid[start_y + y][start_x + offset_x + x]
+        close_cell(grid, cell)
+
+
+def close_cell(grid, cell):
+    height = len(grid)
+    width = len(grid[0])
+
+    cell.locked = True
+
+    cell.walls['N'] = True
+    cell.walls['S'] = True
+    cell.walls['E'] = True
+    cell.walls['W'] = True
+
+    x, y = cell.x, cell.y
+
+    if y > 0:
+        grid[y-1][x].walls['S'] = True
+    if y < height - 1:
+        grid[y+1][x].walls['N'] = True
+    if x > 0:
+        grid[y][x-1].walls['E'] = True
+    if x < width - 1:
+        grid[y][x+1].walls['W'] = True
+
+
+place_42(grid)
+
+
+
+start = grid[0][0]
+carve_maze(grid, start)
+
+
+
+def check_pattern_strict(grid):
+    ok = True
+
+    for row in grid:
+        for cell in row:
+            if cell.locked:
+                for direction, wall in cell.walls.items():
+                    if not wall:
+                        print(f"❌ OPEN wall at ({cell.x},{cell.y}) -> {direction}")
+                        ok = False
+
+    if ok:
+        print("✅ Pattern 42 fully closed")
+
+
+check_pattern_strict(grid)
+
+
+
 
 
 
@@ -180,7 +275,10 @@ def print_maze(grid):
         for x in range(width):
             cell = grid[y][x]
             # Cell content (open space)
-            row += COLOR_PATH + " • " + COLOR_RESET
+            if cell.locked:
+                row += "███"   # 🔥 42 تبان
+            else:
+                row += COLOR_PATH + " • " + COLOR_RESET
             # Right wall of cell
             if cell.walls["E"]:
                 row += COLOR_WALL + V_LINE + COLOR_RESET
