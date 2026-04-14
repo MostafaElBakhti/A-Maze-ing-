@@ -22,21 +22,31 @@ def parse_config_file(config_file):
             parts = line.split('=', 1)
             if len(parts) == 2:
                 key = parts[0].strip().upper()
-                value = parts[1].strip()
+                value = parts[1]
+
+                if value != value.strip():
+                    raise ValueError(
+                        f"No spaces allowed around value "
+                        f"at line {line_num}: '{line}'"
+                    )
 
                 if key in VALID_KEYS:
                     if key not in config:
                         config[key] = value
                     else:
-                        raise ValueError(f"Duplicate key found at line {line_num}: '{key}'")
+                        raise ValueError(
+                            f"Duplicate key found at line {line_num}: '{key}'"
+                        )
                 else:
-                    raise ValueError(f"Invalid key found at line {line_num}: '{key}'")
+                    raise ValueError(
+                        f"Invalid key found at line {line_num}: '{key}'"
+                    )
             else:
                 raise ValueError(f"Format error at line {line_num}: '{line}'")
         else:
             raise ValueError(f"Format error at line {line_num}: '{line}'")
-    return config
 
+    return config   
 
 def parse_width_height(config):
     if 'WIDTH' in config and 'HEIGHT' in config:
@@ -64,15 +74,24 @@ def parse_width_height(config):
 def parse_entry_exit(config):
     if 'ENTRY' in config and 'EXIT' in config:
         try:
-            entry_parts = [p.strip() for p in config['ENTRY'].split(',')]
+            entry_parts = config['ENTRY'].split(',')
             if len(entry_parts) != 2:
                 raise ValueError("Format error at ENTRY. Use X,Y")
+
+            if any(p != p.strip() for p in entry_parts):
+                raise ValueError("ENTRY must be in format X,Y with no spaces")
+
             ex, ey = int(entry_parts[0]), int(entry_parts[1])
 
-            exit_parts = [p.strip() for p in config['EXIT'].split(',')]
+            exit_parts = config['EXIT'].split(',')
             if len(exit_parts) != 2:
                 raise ValueError("Format error at EXIT. Use X,Y")
+
+            if any(p != p.strip() for p in exit_parts):
+                raise ValueError("EXIT must be in format X,Y with no spaces")
+
             qx, qy = int(exit_parts[0]), int(exit_parts[1])
+
         except ValueError as e:
             if "int()" in str(e):
                 raise ValueError('ENTRY and EXIT must have numerical values')
@@ -102,8 +121,9 @@ def parse_file(config):
 
     file_name = config['OUTPUT_FILE']
     if not file_name:
-        file_name = 'maze.txt'
-        config['OUTPUT_FILE'] = file_name
+        raise ValueError("OUTPUT_FILE cannot be empty")
+        # file_name = 'maze.txt'
+        # config['OUTPUT_FILE'] = file_name
 
     directory = os.path.dirname(os.path.abspath(file_name))
     if not os.access(directory, os.W_OK):
