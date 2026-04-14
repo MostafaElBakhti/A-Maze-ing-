@@ -30,7 +30,7 @@ def generate_maze(width, height, seed=None):
 
     return grid
 
-grid = generate_maze(17, 11, seed=None)
+grid = generate_maze(9, 9, seed=None)
 
 for row in grid:
     print([f"({cell.x}, {cell.y})" for cell in row])
@@ -301,8 +301,24 @@ def encode_grid(grid):
 
 
 
+def write_maze(file, grid):
+    lines = encode_grid(grid)
+    for line in lines:
+        file.write(line + "\n")
 
 
+def write_entry_exit(file, entry, exit_):
+    file.write(f"{entry[0]},{entry[1]}\n")   # ← no space after comma
+    file.write(f"{exit_[0]},{exit_[1]}\n")
+
+
+def write_output(grid, path, output_file, entry, exit_):
+    with open(output_file, "w") as file:
+        write_maze(file, grid)
+        file.write("\n")
+        write_entry_exit(file, entry, exit_)
+        file.write("\n")
+        file.write("".join(path) + "\n")
 
 test_open_are(grid)
 # def bfs_path_exists(grid, start, target):
@@ -353,11 +369,11 @@ def check_pattern_strict(grid):
             if cell.locked:
                 for direction, wall in cell.walls.items():
                     if not wall:
-                        print(f"❌ OPEN wall at ({cell.x},{cell.y}) -> {direction}")
+                        print(f" OPEN wall at ({cell.x},{cell.y}) -> {direction}")
                         ok = False
 
     if ok:
-        print("✅ Pattern 42 fully closed")
+        print(" Pattern 42 fully closed")
 
 
 check_pattern_strict(grid)
@@ -371,7 +387,11 @@ print(f"Encoded maze: {value}")
 # print("Path exists:", bfs_path_exists(grid, entry, exit))
 
 
+entry = (0, 0)
+exit_ = (8, 8)  # bottom-right corner for 9x9 grid
 
+write_output(grid, ["N", "E", "S"], "maze_test.txt", entry, exit_)
+print("Output written to maze_test.txt")
 # :::::::::::::::::::: #
 # :::::::::::::::::::: #
 # :::::::::::::::::::: # :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: #
