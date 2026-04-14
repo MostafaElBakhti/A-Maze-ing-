@@ -30,7 +30,7 @@ def generate_maze(width, height, seed=None):
 
     return grid
 
-grid = generate_maze(17, 15, seed=None)
+grid = generate_maze(17, 11, seed=None)
 
 for row in grid:
     print([f"({cell.x}, {cell.y})" for cell in row])
@@ -144,7 +144,53 @@ def is_3x3_open(grid,x,y):
 def test_open_are(grid) :
     if(has_3x3_area(grid)):
         print("found 3x3 are")
-    print("no 3x3 area found")
+    else:
+        print("no 3x3 area found")
+
+
+
+def fix_3x3_areas(grid):
+    height = len(grid)
+    width = len(grid[0])
+
+    for y in range(height - 2):
+        for x in range(width - 2):
+
+            if is_3x3_open(grid, x, y):
+
+                cx = x + 1
+                cy = y + 1
+                center = grid[cy][cx]
+
+                if center.locked:
+                    continue
+
+                directions = ["E", "S"]
+
+                random.shuffle(directions)
+
+                for d in directions:
+                    nx, ny = cx, cy
+
+                    if d == "E":
+                        nx += 1
+                    elif d == "S":
+                        ny += 1
+
+                    # check bounds
+                    if not (0 <= nx < width and 0 <= ny < height):
+                        continue
+
+                    neighbor = grid[ny][nx]
+
+                    # locked
+                    if neighbor.locked:
+                        continue
+
+                    center.walls[d] = True
+                    neighbor.walls[OPPOSITE[d]] = True
+
+                    break
 # check = is_all_visited(grid)
 # print(f"All cells visited: {check}")
 
@@ -225,6 +271,39 @@ def close_cell(grid, cell):
 
 
 
+WALL_BITS = {
+    "N": 1,
+    "E": 2,
+    "S": 4,
+    "W": 8
+}
+
+def encode_cell(cell):
+    value = 0
+
+    for direction, bit in WALL_BITS.items():
+        if cell.walls[direction]:
+            value |= bit
+    return value
+
+
+
+def encode_grid(grid):
+    lines = []
+
+    for row in grid:
+        line = ""
+        for cell in row:
+            encoded = encode_cell(cell)
+            line += format(encoded, "X")  # hexadecimal representation
+        lines.append(line)
+    return lines
+
+
+
+
+
+
 test_open_are(grid)
 # def bfs_path_exists(grid, start, target):
 #     queue = deque([start])
@@ -261,6 +340,9 @@ except ValueError as e:
 start = grid[0][0]
 carve_maze(grid, start)
 
+# while has_3x3_area(grid):
+#     fix_3x3_areas(grid)
+
 
 
 def check_pattern_strict(grid):
@@ -281,9 +363,10 @@ def check_pattern_strict(grid):
 check_pattern_strict(grid)
 print("All NON-LOCKED visited:", is_all_non_locked_visited(grid))
 
-
-entry = grid[0][0]
-exit = grid[len(grid) - 1][len(grid[0]) - 1]
+value = encode_grid(grid)
+print(f"Encoded maze: {value}")
+# entry = grid[0][0]
+# exit = grid[len(grid) - 1][len(grid[0]) - 1]
 
 # print("Path exists:", bfs_path_exists(grid, entry, exit))
 
