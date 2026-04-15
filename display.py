@@ -1,4 +1,5 @@
 import sys
+import os
 
 
 def print_maze(mg, grid, path=None, show_path=False,
@@ -62,46 +63,54 @@ def print_maze(mg, grid, path=None, show_path=False,
 def interactive_menu(mg, grid, path):
     show_path = False
     colors = [
-        "\033[94m",   # blue
-        "\033[91m",   # red
-        "\033[93m",   # yellow
-        "\033[92m",   # green
-        "\033[95m",   # magenta
+        "\033[94m",
+        "\033[91m",
+        "\033[93m",
+        "\033[92m",
+        "\033[95m",
     ]
     color_index = 0
 
     while True:
-        print_maze(
-            mg,
-            grid,
-            path=path,
-            show_path=show_path,
-            wall_color=colors[color_index]
-        )
+        try:
+            print_maze(
+                mg,
+                grid,
+                path=path,
+                show_path=show_path,
+                wall_color=colors[color_index]
+            )
 
-        print("\n=== A-Maze-ing ===")
-        print("1. Re-generate a new maze")
-        print("2. Show/Hide path from entry to exit")
-        print("3. Change wall colour")
-        print("4. Quit")
+            print("\n=== A-Maze-ing ===")
+            print("1. Re-generate a new maze")
+            print("2. Show/Hide path from entry to exit")
+            print("3. Change wall colour")
+            print("4. Quit")
 
-        choice = input("Choice (1-4): ").strip()
+            choice = input("Choice (1-4): ").strip()
 
-        if choice == "1":
-            grid, path = mg.generate()
-            show_path = False
+            if choice == "1":
+                os.system('clear')
+                grid, path = mg.generate()
+                show_path = False
 
-        elif choice == "2":
-            show_path = not show_path
-            status = "shown" if show_path else "hidden"
-            print(f"Path {status}")
+            elif choice == "2":
+                os.system('clear')
+                show_path = not show_path
+                status = "shown" if show_path else "hidden"
+                print(f"Path {status}")
 
-        elif choice == "3":
-            color_index = (color_index + 1) % len(colors)
+            elif choice == "3":
+                os.system('clear')
+                color_index = (color_index + 1) % len(colors)
 
-        elif choice == "4":
-            print("Bye!")
+            elif choice == "4":
+                print("Bye!")
+                sys.exit(0)
+
+            else:
+                print("Invalid choice, please enter 1-4")
+
+        except KeyboardInterrupt:
+            print("\nBye!")
             sys.exit(0)
-
-        else:
-            print("Invalid choice, please enter 1-4")

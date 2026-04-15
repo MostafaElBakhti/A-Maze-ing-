@@ -409,7 +409,7 @@ class MazeGenerator():
         path = self.shortest_path(grid)
         self.write_output(grid, path)
 
-        return grid, path   # ← no print_maze here
+        return grid, path   
 
 
 def get_maze(width, height, entry, exit_,  perfect, output_file, seed=None):
@@ -418,25 +418,30 @@ def get_maze(width, height, entry, exit_,  perfect, output_file, seed=None):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python3 a_maze_ing.py config.txt")
-        sys.exit(1)
-
     try:
-        config = get_config(sys.argv[1])
-    except ValueError as e:
-        print(f"Error: {e}")
-        sys.exit(1)
+        if len(sys.argv) != 2:
+            print("Usage: python3 a_maze_ing.py config.txt")
+            sys.exit(1)
 
-    mg = MazeGenerator(
-        width=config['WIDTH'],
-        height=config['HEIGHT'],
-        entry=config['ENTRY'],
-        exit_=config['EXIT'],
-        perfect=config['PERFECT'],
-        output_file=config['OUTPUT_FILE'],
-        seed=config['SEED']
-    )
+        try:
+            config = get_config(sys.argv[1])
+        except ValueError as e:
+            print(f"Error: {e}")
+            sys.exit(1)
 
-    grid, path = mg.generate()
-    interactive_menu(mg, grid, path)  
+        mg = MazeGenerator(
+            width=config['WIDTH'],
+            height=config['HEIGHT'],
+            entry=config['ENTRY'],
+            exit_=config['EXIT'],
+            perfect=config['PERFECT'],
+            output_file=config['OUTPUT_FILE'],
+            seed=config['SEED']
+        )
+
+        grid, path = mg.generate()
+        interactive_menu(mg, grid, path)
+
+    except KeyboardInterrupt:
+        print("\nBye!")
+        sys.exit(0)

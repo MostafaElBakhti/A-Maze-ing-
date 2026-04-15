@@ -22,13 +22,7 @@ def parse_config_file(config_file):
             parts = line.split('=', 1)
             if len(parts) == 2:
                 key = parts[0].strip().upper()
-                value = parts[1]
-
-                if value != value.strip():
-                    raise ValueError(
-                        f"No spaces allowed around value "
-                        f"at line {line_num}: '{line}'"
-                    )
+                value = parts[1].strip()
 
                 if key in VALID_KEYS:
                     if key not in config:
@@ -56,14 +50,14 @@ def parse_width_height(config):
         except ValueError:
             raise ValueError('the WIDTH and HEIGHT has to be numerical.')
 
-        if height < 0 or width < 0:
-            raise ValueError('the WIDTH and HEIGHT values must be positive')
+        if height <= 0 or width <= 0:
+            raise ValueError('the WIDTH and HEIGHT values must be positive or > 0')
 
-        if width < 10 or width > 30:
-            raise ValueError("WIDTH must be between 10 and 30.")
+        # if width < 10 or width > 30:
+        #     raise ValueError("WIDTH must be between 10 and 30.")
 
-        if height < 10 or height > 30:
-            raise ValueError("HEIGHT must be between 10 and 30.")
+        # if height < 10 or height > 30:
+        #     raise ValueError("HEIGHT must be between 10 and 30.")
 
         config['WIDTH'] = width
         config['HEIGHT'] = height
@@ -78,8 +72,8 @@ def parse_entry_exit(config):
             if len(entry_parts) != 2:
                 raise ValueError("Format error at ENTRY. Use X,Y")
 
-            if any(p != p.strip() for p in entry_parts):
-                raise ValueError("ENTRY must be in format X,Y with no spaces")
+            # if any(p != p.strip() for p in entry_parts):
+            #     raise ValueError("ENTRY must be in format X,Y with no spaces")
 
             ex, ey = int(entry_parts[0]), int(entry_parts[1])
 
@@ -87,8 +81,8 @@ def parse_entry_exit(config):
             if len(exit_parts) != 2:
                 raise ValueError("Format error at EXIT. Use X,Y")
 
-            if any(p != p.strip() for p in exit_parts):
-                raise ValueError("EXIT must be in format X,Y with no spaces")
+            # if any(p != p.strip() for p in exit_parts):
+            #     raise ValueError("EXIT must be in format X,Y with no spaces")
 
             qx, qy = int(exit_parts[0]), int(exit_parts[1])
 
@@ -120,10 +114,15 @@ def parse_file(config):
         raise ValueError("The OUTPUT_FILE key is missing.")
 
     file_name = config['OUTPUT_FILE']
+
     if not file_name:
         raise ValueError("OUTPUT_FILE cannot be empty")
-        # file_name = 'maze.txt'
-        # config['OUTPUT_FILE'] = file_name
+
+    if ' ' in file_name:
+        raise ValueError("OUTPUT_FILE cannot contain spaces")
+
+    if '..' in file_name:
+        raise ValueError("OUTPUT_FILE cannot contain '..'")
 
     directory = os.path.dirname(os.path.abspath(file_name))
     if not os.access(directory, os.W_OK):
