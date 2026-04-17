@@ -3,7 +3,7 @@ MAIN = a_maze_ing.py
 CONFIG = config.txt
 
 install:
-	pip install -r requirements.txt
+	pip install flake8 mypy build
 
 run:
 	$(PYTHON) $(MAIN) $(CONFIG)

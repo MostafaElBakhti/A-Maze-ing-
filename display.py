@@ -10,10 +10,13 @@ def print_maze(mg, grid, path=None, show_path=False,
 
     TOP_LEFT = "╔"
     TOP_RIGHT = "╗"
+    BOT_LEFT = "╚"
+    BOT_RIGHT = "╝"
     H_LINE = "═"
     V_LINE = "║"
     CROSS = "╬"
     T_DOWN = "╦"
+    T_UP = "╩"
     T_RIGHT = "╠"
     T_LEFT = "╣"
 
@@ -46,18 +49,28 @@ def print_maze(mg, grid, path=None, show_path=False,
                 row += " "
         print(row)
 
-        row = COLOR_WALL + T_RIGHT + COLOR_RESET
-        for x in range(mg.width):
-            cell = grid[y][x]
-            if cell.walls["S"]:
+        if y == mg.height - 1:
+            row = COLOR_WALL + BOT_LEFT + COLOR_RESET
+            for x in range(mg.width):
                 row += COLOR_WALL + H_LINE * 3 + COLOR_RESET
-            else:
-                row += "   "
-            if x < mg.width - 1:
-                row += COLOR_WALL + CROSS + COLOR_RESET
-            else:
-                row += COLOR_WALL + T_LEFT + COLOR_RESET
-        print(row)
+                if x < mg.width - 1:
+                    row += COLOR_WALL + T_UP + COLOR_RESET
+                else:
+                    row += COLOR_WALL + BOT_RIGHT + COLOR_RESET
+            print(row)
+        else:
+            row = COLOR_WALL + T_RIGHT + COLOR_RESET
+            for x in range(mg.width):
+                cell = grid[y][x]
+                if cell.walls["S"]:
+                    row += COLOR_WALL + H_LINE * 3 + COLOR_RESET
+                else:
+                    row += "   "
+                if x < mg.width - 1:
+                    row += COLOR_WALL + CROSS + COLOR_RESET
+                else:
+                    row += COLOR_WALL + T_LEFT + COLOR_RESET
+            print(row)
 
 
 def interactive_menu(mg, grid, path):
@@ -73,6 +86,7 @@ def interactive_menu(mg, grid, path):
 
     while True:
         try:
+            os.system('clear')
             print_maze(
                 mg,
                 grid,
@@ -90,18 +104,13 @@ def interactive_menu(mg, grid, path):
             choice = input("Choice (1-4): ").strip()
 
             if choice == "1":
-                os.system('clear')
                 grid, path = mg.generate()
                 show_path = False
 
             elif choice == "2":
-                os.system('clear')
                 show_path = not show_path
-                status = "shown" if show_path else "hidden"
-                print(f"Path {status}")
 
             elif choice == "3":
-                os.system('clear')
                 color_index = (color_index + 1) % len(colors)
 
             elif choice == "4":
@@ -110,6 +119,7 @@ def interactive_menu(mg, grid, path):
 
             else:
                 print("Invalid choice, please enter 1-4")
+                input("Press Enter to continue...")
 
         except KeyboardInterrupt:
             print("\nBye!")
