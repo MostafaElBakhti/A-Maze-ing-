@@ -1,6 +1,14 @@
 import os
 
-VALID_KEYS = ['WIDTH', 'HEIGHT', 'ENTRY', 'EXIT', 'OUTPUT_FILE', 'SEED', 'PERFECT']
+VALID_KEYS = [
+    'WIDTH',
+    'HEIGHT',
+    'ENTRY',
+    'EXIT',
+    'OUTPUT_FILE',
+    'SEED',
+    'PERFECT'
+    ]
 
 
 def parse_config_file(config_file):
@@ -40,7 +48,8 @@ def parse_config_file(config_file):
         else:
             raise ValueError(f"Format error at line {line_num}: '{line}'")
 
-    return config   
+    return config
+
 
 def parse_width_height(config):
     if 'WIDTH' in config and 'HEIGHT' in config:
@@ -51,13 +60,10 @@ def parse_width_height(config):
             raise ValueError('the WIDTH and HEIGHT has to be numerical.')
 
         if height <= 0 or width <= 0:
-            raise ValueError('the WIDTH and HEIGHT values must be positive or > 0')
-
-        # if width < 10 or width > 30:
-        #     raise ValueError("WIDTH must be between 10 and 30.")
-
-        # if height < 10 or height > 30:
-        #     raise ValueError("HEIGHT must be between 10 and 30.")
+            raise ValueError(
+                'the WIDTH and HEIGHT values '
+                'must be positive or > 0'
+            )
 
         config['WIDTH'] = width
         config['HEIGHT'] = height
@@ -71,9 +77,6 @@ def parse_entry_exit(config):
             entry_parts = config['ENTRY'].split(',')
             if len(entry_parts) != 2:
                 raise ValueError("Format error at ENTRY. Use X,Y")
-
-            # if any(p != p.strip() for p in entry_parts):
-            #     raise ValueError("ENTRY must be in format X,Y with no spaces")
 
             ex, ey = int(entry_parts[0]), int(entry_parts[1])
 

@@ -1,5 +1,3 @@
-import random
-from collections import deque
 import sys
 from parse import get_config
 from display import interactive_menu

@@ -1,8 +1,5 @@
 import random
 from collections import deque
-import sys
-from parse import get_config
-from display import interactive_menu
 
 
 class MazeGenerator():
@@ -86,7 +83,11 @@ class MazeGenerator():
         unvisited_neighbors = {}
         for direction in neighbors:
             neighbor = neighbors[direction]
-            if not neighbor.visited and not neighbor.locked and not cell.locked:
+            if (
+                not neighbor.visited
+                and not neighbor.locked
+                and not cell.locked
+            ):
                 unvisited_neighbors[direction] = neighbor
 
         return unvisited_neighbors
@@ -416,5 +417,7 @@ class MazeGenerator():
 
 
 def get_maze(width, height, entry, exit_,  perfect, output_file, seed=None):
-    maze = MazeGenerator(width, height, entry, exit_, perfect, output_file, seed)
+    maze = MazeGenerator(
+        width, height, entry, exit_, perfect, output_file, seed
+    )
     return maze
