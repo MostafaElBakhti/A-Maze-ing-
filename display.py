@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 from typing import Any, Optional, List
 
 
@@ -28,7 +29,14 @@ def print_maze(
 
     path_coords = set()
     if show_path and path:
-        path_coords = set(mg.path_to_coords(path))
+        if (
+            isinstance(path, list)
+            and len(path) > 0
+            and isinstance(path[0], tuple)
+        ):
+            path_coords = set(path)
+        else:
+            path_coords = set(mg.path_to_coords(path))
 
     print(COLOR_WALL + TOP_LEFT
           + (H_LINE * 3 + T_DOWN) * (mg.width - 1)
@@ -79,6 +87,30 @@ def print_maze(
             print(row)
 
 
+def animate_path(
+    mg: Any,
+    grid: List[List[Any]],
+    path: List[Any],
+    wall_color: str,
+    delay: float = 0.05,
+) -> None:
+    coords = mg.path_to_coords(path)
+
+    for i in range(1, len(coords) + 1):
+        os.system("clear")
+        partial_path = coords[:i]
+
+        print_maze(
+            mg,
+            grid,
+            path=partial_path,
+            show_path=True,
+            wall_color=wall_color,
+        )
+
+        time.sleep(delay)
+
+
 def interactive_menu(
     mg: Any,
     grid: List[List[Any]],
@@ -109,9 +141,10 @@ def interactive_menu(
             print("1. Re-generate a new maze")
             print("2. Show/Hide path from entry to exit")
             print("3. Change wall colour")
-            print("4. Quit")
+            print("4. Animate path")
+            print("5. Quit")
 
-            choice = input("Choice (1-4): ").strip()
+            choice = input("Choice (1-5): ").strip()
 
             if choice == "1":
                 grid, path = mg.generate()
@@ -124,13 +157,22 @@ def interactive_menu(
                 color_index = (color_index + 1) % len(colors)
 
             elif choice == "4":
+                animate_path(
+                    mg,
+                    grid,
+                    path,
+                    wall_color=colors[color_index]
+                )
+                input("Press Enter to continue...")
+
+            elif choice == "5":
                 print("Bye!")
                 sys.exit(0)
 
             else:
-                print("Invalid choice, please enter 1-4")
+                print("Invalid choice, please enter 1-5")
                 input("Press Enter to continue...")
 
-        except KeyboardInterrupt:
+        except (KeyboardInterrupt, EOFError):
             print("\nBye!")
             sys.exit(0)

@@ -288,15 +288,21 @@ class MazeGenerator():
         entry = self.entry
         exit_ = self.exit_
 
-        with open(filename, "w") as file:
-            self.write_maze(file, grid)
-            file.write("\n")
-            self.write_entry_exit(file, entry, exit_)
-            file.write("\n")
-            if path:
-                file.write("".join(path) + "\n")
-            else:
-                file.write("NO_PATH\n")
+        try:
+            with open(filename, "w") as file:
+                self.write_maze(file, grid)
+                file.write("\n")
+                self.write_entry_exit(file, entry, exit_)
+                file.write("\n")
+                if path:
+                    file.write("".join(path) + "\n")
+                else:
+                    file.write("NO_PATH\n")
+
+        except PermissionError:
+            print(f"Error: No write permission for file: {filename}")
+        except OSError as e:
+            print(f"Error writing to file {filename}: {e}")
 
     def can_move(
         self, grid: list[list[Any]], x: int, y: int, direction: str

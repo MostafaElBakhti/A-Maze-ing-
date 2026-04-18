@@ -1,7 +1,7 @@
 # Default Configuration
-width=19
-HEIGHt=20
+width=11
+HEIGHt=9
 ENTRY=0,0
-EXIT=13,10
+EXIT=6,0
 OUTPUT_FILE=maze.txt
-perfect=true
+perfect=false
