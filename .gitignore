@@ -4,3 +4,10 @@ __pycache__/
 dist/
 build/
 *.egg-info/
+
+# local envs and build artifacts
+eval_env/
+.run_env/
+__pycache__/
+dist/
+*.egg-info/

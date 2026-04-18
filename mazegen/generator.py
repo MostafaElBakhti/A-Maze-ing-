@@ -1,5 +1,9 @@
 import random
 from collections import deque
+import sys
+from parse import get_config
+from display import interactive_menu
+
 
 class MazeGenerator():
     def __init__(self, width, height, entry, exit_,
@@ -158,7 +162,7 @@ class MazeGenerator():
 
                     center.walls[d] = True
                     neighbor.walls[self.opposite[d]] = True
-                    return  
+                    return
 
     def is_fully_closed(self, cell):
         return all(cell.walls.values())
@@ -167,7 +171,7 @@ class MazeGenerator():
         cell = grid[y][x]
         cell.visited = True
         cell.locked = True
-        cell.walls = {"N": True, "E": True, "S": True, "W": True} 
+        cell.walls = {"N": True, "E": True, "S": True, "W": True}
 
         if y > 0:
             grid[y - 1][x].walls["S"] = True
@@ -177,7 +181,6 @@ class MazeGenerator():
             grid[y][x - 1].walls["E"] = True
         if x < self.width - 1:
             grid[y][x + 1].walls["W"] = True
-
 
     def draw_4(self, grid, x, y):
         coords = [
@@ -204,17 +207,13 @@ class MazeGenerator():
             self.close_cell(grid, x + dx, y + dy)
 
     def place_42_pattern(self, grid):
-        height = self.height
-        width = self.width
-
         pattern_width = 7
-        pattern_height = 5
 
-        if width < 11 or height < 9:
-            raise ValueError("maze too small for 42 pattern , min is (11,9)")
+        if self.width < 11 or self.height < 9:
+            raise ValueError("maze too small for 42 pattern, min is (11,9)")
 
-        start_x = (width - pattern_width) // 2
-        start_y = (height - pattern_height) // 2
+        start_x = (self.width - pattern_width) // 2
+        start_y = (self.height - 5) // 2
 
         self.draw_4(grid, start_x, start_y)
         self.draw_2(grid, start_x + 4, start_y)
@@ -376,7 +375,6 @@ class MazeGenerator():
         if self.entry == self.exit_:
             raise ValueError("Entry and exit must be different")
 
-
     def generate(self):
         try:
             self.validate_params()
@@ -392,6 +390,17 @@ class MazeGenerator():
         except ValueError as e:
             print(f"Warning: {e} — generating maze without 42 pattern")
 
+        entry_cell = grid[self.entry[1]][self.entry[0]]
+        exit_cell = grid[self.exit_[1]][self.exit_[0]]
+
+        if entry_cell.locked:
+            print(f"Error: Entry {self.entry} is inside the 42 pattern")
+            return None, None
+
+        if exit_cell.locked:
+            print(f"Error: Exit {self.exit_} is inside the 42 pattern")
+            return None, None
+
         self.generate_maze(grid)
 
         while self.has_3x3_open(grid):
@@ -403,7 +412,8 @@ class MazeGenerator():
         path = self.shortest_path(grid)
         self.write_output(grid, path)
 
-        return grid, path   
+        return grid, path
+
 
 def get_maze(width, height, entry, exit_,  perfect, output_file, seed=None):
     maze = MazeGenerator(width, height, entry, exit_, perfect, output_file, seed)

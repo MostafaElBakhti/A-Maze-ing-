@@ -1,11 +1,13 @@
 [project]
-name = "maze"
+name = "mazegen"
 version = "0.1.0"
 description = ""
 authors = [
     {name = "mel-bakh"}
 ]
-requires-python = ">=3.12"
+readme = "README.md"
+requires-python = ">=3.10"
+packages = [{ include = "mazegen" }]
 dependencies = [
 ]
 
