@@ -1,9 +1,15 @@
 import sys
 import os
+from typing import Any, Optional, List
 
 
-def print_maze(mg, grid, path=None, show_path=False,
-               wall_color="\033[94m"):
+def print_maze(
+    mg: Any,
+    grid: List[List[Any]],
+    path: Optional[List[Any]] = None,
+    show_path: bool = False,
+    wall_color: str = "\033[94m",
+) -> None:
     COLOR_WALL = wall_color
     COLOR_SOLUTION = "\033[96m"
     COLOR_RESET = "\033[0m"
@@ -73,7 +79,11 @@ def print_maze(mg, grid, path=None, show_path=False,
             print(row)
 
 
-def interactive_menu(mg, grid, path):
+def interactive_menu(
+    mg: Any,
+    grid: List[List[Any]],
+    path: Any,
+) -> None:
     show_path = False
     colors = [
         "\033[94m",

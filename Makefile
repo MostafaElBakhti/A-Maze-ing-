@@ -15,11 +15,6 @@ clean:
 	rm -rf __pycache__
 	rm -rf .mypy_cache
 	rm -rf *.pyc
-	rm -rf dist
-	rm -rf build
-	rm -rf *.egg-info
-	rm -rf mazegen.egg-info
-	rm -rf test_env
 
 lint:
 	flake8 .

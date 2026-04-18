@@ -1,10 +1,19 @@
 import random
 from collections import deque
+from typing import Any, Optional, TextIO
 
 
 class MazeGenerator():
-    def __init__(self, width, height, entry, exit_,
-                 perfect, output_file, seed=None):
+    def __init__(
+        self,
+        width: int,
+        height: int,
+        entry: tuple[int, int],
+        exit_: tuple[int, int],
+        perfect: bool,
+        output_file: str,
+        seed: Optional[int] = None
+    ) -> None:
         self.width = width
         self.height = height
         self.exit_ = exit_
@@ -32,7 +41,7 @@ class MazeGenerator():
         }
 
     class Cell:
-        def __init__(self, x, y):
+        def __init__(self, x: int, y: int) -> None:
             self.x = x
             self.y = y
             self.visited = False
@@ -44,8 +53,8 @@ class MazeGenerator():
                 "W": True
             }
 
-    def creat_grid(self):
-        grid = []
+    def creat_grid(self) -> list[list[Any]]:
+        grid: list[list[Any]] = []
 
         for y in range(self.height):
             row = []
@@ -55,8 +64,10 @@ class MazeGenerator():
 
         return grid
 
-    def get_neighbors(self, cell, grid):
-        neighbors = {}
+    def get_neighbors(
+        self, cell: Any, grid: list[list[Any]]
+    ) -> dict[str, Any]:
+        neighbors: dict[str, Any] = {}
         width = self.width
         height = self.height
 
@@ -73,14 +84,18 @@ class MazeGenerator():
 
         return neighbors
 
-    def remove_wall(self, cell, neighbor, direction):
+    def remove_wall(
+        self, cell: Any, neighbor: Any, direction: str
+    ) -> None:
         cell.walls[direction] = False
         neighbor.walls[self.opposite[direction]] = False
 
-    def get_unvisited_neighbors(self, cell, grid):
+    def get_unvisited_neighbors(
+        self, cell: Any, grid: list[list[Any]]
+    ) -> dict[str, Any]:
         neighbors = self.get_neighbors(cell, grid)
 
-        unvisited_neighbors = {}
+        unvisited_neighbors: dict[str, Any] = {}
         for direction in neighbors:
             neighbor = neighbors[direction]
             if (
@@ -92,7 +107,9 @@ class MazeGenerator():
 
         return unvisited_neighbors
 
-    def dfs_algo(self, cell, grid):
+    def dfs_algo(
+        self, cell: Any, grid: list[list[Any]]
+    ) -> Optional[Any]:
         unvisited = self.get_unvisited_neighbors(cell, grid)
 
         if not unvisited:
@@ -106,7 +123,7 @@ class MazeGenerator():
 
         return neighbor
 
-    def generate_maze(self, grid):
+    def generate_maze(self, grid: list[list[Any]]) -> None:
         stack = []
         start = grid[0][0]
 
@@ -122,7 +139,7 @@ class MazeGenerator():
             else:
                 stack.pop()
 
-    def has_3x3_open(self, grid):
+    def has_3x3_open(self, grid: list[list[Any]]) -> bool:
         height = self.height
         width = self.width
 
@@ -132,7 +149,9 @@ class MazeGenerator():
                     return True
         return False
 
-    def is_3x3_open(self, grid, x, y):
+    def is_3x3_open(
+        self, grid: list[list[Any]], x: int, y: int
+    ) -> bool:
         for dy in range(3):
             for dx in range(3):
                 cell = grid[dy + y][dx + x]
@@ -143,7 +162,7 @@ class MazeGenerator():
                     return False
         return True
 
-    def fix_3x3_areas(self, grid):
+    def fix_3x3_areas(self, grid: list[list[Any]]) -> None:
         for y in range(self.height - 2):
             for x in range(self.width - 2):
                 if self.is_3x3_open(grid, x, y):
@@ -165,10 +184,12 @@ class MazeGenerator():
                     neighbor.walls[self.opposite[d]] = True
                     return
 
-    def is_fully_closed(self, cell):
+    def is_fully_closed(self, cell: Any) -> bool:
         return all(cell.walls.values())
 
-    def close_cell(self, grid, x, y):
+    def close_cell(
+        self, grid: list[list[Any]], x: int, y: int
+    ) -> None:
         cell = grid[y][x]
         cell.visited = True
         cell.locked = True
@@ -183,7 +204,9 @@ class MazeGenerator():
         if x < self.width - 1:
             grid[y][x + 1].walls["W"] = True
 
-    def draw_4(self, grid, x, y):
+    def draw_4(
+        self, grid: list[list[Any]], x: int, y: int
+    ) -> None:
         coords = [
             (0, 0),
             (0, 1),
@@ -195,7 +218,9 @@ class MazeGenerator():
         for dx, dy in coords:
             self.close_cell(grid, x + dx, y + dy)
 
-    def draw_2(self, grid, x, y):
+    def draw_2(
+        self, grid: list[list[Any]], x: int, y: int
+    ) -> None:
         coords = [
             (0, 0), (1, 0), (2, 0),
                             (2, 1),
@@ -207,7 +232,7 @@ class MazeGenerator():
         for dx, dy, in coords:
             self.close_cell(grid, x + dx, y + dy)
 
-    def place_42_pattern(self, grid):
+    def place_42_pattern(self, grid: list[list[Any]]) -> bool:
         pattern_width = 7
 
         if self.width < 11 or self.height < 9:
@@ -221,7 +246,7 @@ class MazeGenerator():
 
         return True
 
-    def encoded_cell(self, cell):
+    def encoded_cell(self, cell: Any) -> int:
         value = 0
 
         for direction, bit in self.wall_bits.items():
@@ -229,7 +254,7 @@ class MazeGenerator():
                 value |= bit
         return value
 
-    def encode_grid(self, grid):
+    def encode_grid(self, grid: list[list[Any]]) -> list[str]:
         lines = []
 
         for row in grid:
@@ -240,16 +265,25 @@ class MazeGenerator():
             lines.append(line)
         return lines
 
-    def write_maze(self, file, grid):
+    def write_maze(
+        self, file: TextIO, grid: list[list[Any]]
+    ) -> None:
         lines = self.encode_grid(grid)
         for line in lines:
             file.write(line + "\n")
 
-    def write_entry_exit(self, file, entry, exit_):
+    def write_entry_exit(
+        self,
+        file: TextIO,
+        entry: tuple[int, int],
+        exit_: tuple[int, int]
+    ) -> None:
         file.write(f"{entry[0]},{entry[1]}\n")
         file.write(f"{exit_[0]},{exit_[1]}\n")
 
-    def write_output(self, grid, path):
+    def write_output(
+        self, grid: list[list[Any]], path: list[str]
+    ) -> None:
         filename = self.output_file
         entry = self.entry
         exit_ = self.exit_
@@ -264,7 +298,9 @@ class MazeGenerator():
             else:
                 file.write("NO_PATH\n")
 
-    def can_move(self, grid, x, y, direction):
+    def can_move(
+        self, grid: list[list[Any]], x: int, y: int, direction: str
+    ) -> bool:
         cell = grid[y][x]
 
         if cell.walls[direction]:
@@ -272,10 +308,15 @@ class MazeGenerator():
 
         return True
 
-    def bfs_algo(self, grid, entry, exit_):
-        queue = deque()
-        visited = set()
-        parent = {}
+    def bfs_algo(
+        self,
+        grid: list[list[Any]],
+        entry: tuple[int, int],
+        exit_: tuple[int, int]
+    ) -> Optional[dict[tuple[int, int], Any]]:
+        queue: deque[tuple[int, int]] = deque()
+        visited: set[tuple[int, int]] = set()
+        parent: dict[tuple[int, int], Any] = {}
 
         queue.append(entry)
         visited.add(entry)
@@ -297,7 +338,12 @@ class MazeGenerator():
                         queue.append((nx, ny))
         return None
 
-    def reconstruct_path(self, parent, entry, exit_):
+    def reconstruct_path(
+        self,
+        parent: dict[tuple[int, int], Any],
+        entry: tuple[int, int],
+        exit_: tuple[int, int]
+    ) -> list[str]:
 
         path = []
         current = exit_
@@ -310,7 +356,7 @@ class MazeGenerator():
         path.reverse()
         return path
 
-    def shortest_path(self, grid):
+    def shortest_path(self, grid: list[list[Any]]) -> list[str]:
         entry = self.entry
         exit_ = self.exit_
         parent = self.bfs_algo(grid, entry, exit_)
@@ -319,7 +365,9 @@ class MazeGenerator():
             return []
         return self.reconstruct_path(parent, entry, exit_)
 
-    def path_to_coords(self, path):
+    def path_to_coords(
+        self, path: list[str]
+    ) -> list[tuple[int, int]]:
         entry = self.entry
         coords = [entry]
         x, y = entry
@@ -332,7 +380,9 @@ class MazeGenerator():
 
         return coords
 
-    def break_random_walls(self, grid, pro=0.1):
+    def break_random_walls(
+        self, grid: list[list[Any]], pro: float = 0.1
+    ) -> None:
         for row in grid:
             for cell in row:
 
@@ -351,11 +401,11 @@ class MazeGenerator():
                         if (cell.walls[direction] and random.random() < pro):
                             self.remove_wall(cell, neighbor, direction)
 
-    def init_random(self):
+    def init_random(self) -> None:
         if self.seed is not None:
             random.seed(self.seed)
 
-    def validate_params(self):
+    def validate_params(self) -> None:
         if self.width <= 0 or self.height <= 0:
             raise ValueError("Width and height must be positive")
 
@@ -376,7 +426,9 @@ class MazeGenerator():
         if self.entry == self.exit_:
             raise ValueError("Entry and exit must be different")
 
-    def generate(self):
+    def generate(
+        self
+    ) -> tuple[Optional[list[list[Any]]], Optional[list[str]]]:
         try:
             self.validate_params()
         except ValueError as e:
@@ -416,7 +468,15 @@ class MazeGenerator():
         return grid, path
 
 
-def get_maze(width, height, entry, exit_,  perfect, output_file, seed=None):
+def get_maze(
+    width: int,
+    height: int,
+    entry: tuple[int, int],
+    exit_: tuple[int, int],
+    perfect: bool,
+    output_file: str,
+    seed: Optional[int] = None
+) -> MazeGenerator:
     maze = MazeGenerator(
         width, height, entry, exit_, perfect, output_file, seed
     )

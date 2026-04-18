@@ -4,296 +4,158 @@
 
 ## Description
 
-A-Maze-ing is a Python maze generator that:
-
-- reads a configuration file,
-- generates a random maze with optional deterministic seed,
-- writes the maze to a hexadecimal wall-encoded output file,
-- computes and stores a shortest valid path from entry to exit,
-- provides an interactive terminal visualization.
-
-The project also includes a reusable generator module in the `mazegen` package.
-
-## Features
-
-- DFS-based random maze carving.
-- Optional perfect maze mode (`PERFECT=True`).
-- Optional non-perfect mode by opening extra random walls (`PERFECT=False`).
-- Validation and parsing for mandatory config keys.
-- Hexadecimal output format (N/E/S/W encoded as bits 0/1/2/3).
-- Shortest path computation using BFS.
-- "42" pattern insertion using locked/closed cells (skipped with warning if maze too small).
-- 3x3 open-area detection and correction.
-- Interactive terminal rendering with:
-	- maze regeneration,
-	- show/hide shortest path,
-	- wall color cycling.
-
-## Project Structure
-
-- `a_maze_ing.py`: main entry point, `MazeGenerator` class used by the app.
-- `parse.py`: configuration parsing and validation.
-- `display.py`: terminal rendering and interaction menu.
-- `config.txt`: default configuration file.
-- `maze.txt`: generated output file.
-- `mazegen/mazegen.py`: reusable maze-generation module.
-- `Makefile`: install/run/debug/clean/lint targets.
+A-Maze-ing is a maze generator written in Python. It reads a configuration file, generates a random maze (optionally perfect) containing a visible "42" pattern, writes the result to a file using a hexadecimal wall encoding, and displays the maze in the terminal with an interactive menu.
 
 ## Instructions
 
-### Requirements
+Requirements: Python 3.10 or later, pip.
 
-- Python 3.10+ (project `pyproject.toml` currently targets Python 3.12).
-- `flake8`, `mypy`, `build` for lint/build workflows.
-
-### Install Dependencies
-
+Install dependencies:
 ```bash
 make install
 ```
 
-### Run
-
-```bash
-python3 a_maze_ing.py config.txt
-```
-
-or
-
+Run the program:
 ```bash
 make run
 ```
 
-### Debug
-
-```bash
-make debug
-```
-
-### Lint
-
-```bash
-make lint
-```
-
-Optional strict mode:
-
-```bash
-make lint-strict
-```
-
-### Clean Build/Cache Artifacts
-
-```bash
-make clean
-```
-
-### Build Python Package
-
-```bash
-python3 -m build
-```
-
-## Usage
-
+Or directly:
 ```bash
 python3 a_maze_ing.py config.txt
 ```
 
-The program reads `config.txt`, generates a maze, writes the encoded file (for example `maze.txt`), then opens an interactive terminal interface.
-
-Interactive menu:
-
-1. Re-generate a new maze.
-2. Show/Hide shortest path.
-3. Change wall color.
-4. Quit.
-
-## Configuration File Format
-
-One `KEY=VALUE` per line.
-
-- Empty lines are ignored.
-- Lines starting with `#` are comments.
-- Keys are case-insensitive in practice (internally normalized to uppercase).
-
-### Mandatory Keys
-
-| Key | Type | Example | Description |
-|---|---|---|---|
-| `WIDTH` | int | `WIDTH=20` | Maze width in cells |
-| `HEIGHT` | int | `HEIGHT=15` | Maze height in cells |
-| `ENTRY` | `x,y` | `ENTRY=0,0` | Entry cell coordinates |
-| `EXIT` | `x,y` | `EXIT=19,14` | Exit cell coordinates |
-| `OUTPUT_FILE` | string | `OUTPUT_FILE=maze.txt` | Output filename |
-| `PERFECT` | bool | `PERFECT=True` | Perfect maze mode |
-
-### Optional Keys
-
-| Key | Type | Example | Description |
-|---|---|---|---|
-| `SEED` | int/float/string/None | `SEED=42` | Random seed for reproducible generation |
-
-### Default Config In This Repository
-
-```ini
-# Default Configuration
-width=19
-HEIGHT=17
-ENTRY=0,0
-EXIT=13,10
-OUTPUT_FILE=maze.txt
-perfect=false
+Clean build artifacts:
+```bash
+make clean
 ```
 
-## Output File Format
+Run linters:
+```bash
+make lint
+```
 
-Each maze cell is encoded as one hexadecimal digit.
+## Configuration file format
 
-Bit mapping:
+The config file uses `KEY=VALUE` format, one pair per line. Lines starting with `#` are comments and ignored.
 
-- bit `0` (value `1`): North wall closed
-- bit `1` (value `2`): East wall closed
-- bit `2` (value `4`): South wall closed
-- bit `3` (value `8`): West wall closed
+| Key | Description | Example |
+|---|---|---|
+| `WIDTH` | Maze width in cells | `WIDTH=20` |
+| `HEIGHT` | Maze height in cells | `HEIGHT=15` |
+| `ENTRY` | Entry coordinates x,y | `ENTRY=0,0` |
+| `EXIT` | Exit coordinates x,y | `EXIT=19,14` |
+| `OUTPUT_FILE` | Output filename | `OUTPUT_FILE=maze.txt` |
+| `PERFECT` | Perfect maze flag | `PERFECT=True` |
+| `SEED` | Random seed (optional) | `SEED=42` |
 
-Cells are written row by row, one line per row.
-
-After one empty line:
-
-1. Entry coordinates (`x,y`)
-2. Exit coordinates (`x,y`)
-3. Shortest path as letters `N`, `E`, `S`, `W` (or `NO_PATH`)
+Example:
+```
+WIDTH=20
+HEIGHT=15
+ENTRY=0,0
+EXIT=19,14
+OUTPUT_FILE=maze.txt
+PERFECT=True
+SEED=42
+```
 
 ## Algorithm
 
-### Chosen Algorithm
+We used the **recursive backtracker** (iterative DFS with a stack) to carve the maze, and **BFS** to find the shortest path between entry and exit.
 
-Depth-First Search recursive backtracker (implemented iteratively with a stack) is used to carve the maze.
+### Why this algorithm
 
-### Why This Algorithm
+- Simple to implement and reason about
+- Naturally produces a perfect maze — a spanning tree with exactly one path between any two cells
+- Easy to extend for imperfect mazes by breaking extra walls after carving
+- BFS guarantees the shortest path in an unweighted grid
 
-- Simple and robust to implement.
-- Produces clear corridor-like mazes.
-- Works well with random seeds for reproducibility.
-- Easy to adapt for perfect/non-perfect variants.
+## Reusable module
 
-### Additional Steps
+The maze generation logic lives in the `mazegen` package, which can be installed and imported in any Python project.
 
-- Inject closed-cell "42" pattern when size permits.
-- Post-process to prevent 3x3 fully open areas.
-- In non-perfect mode, break selected walls randomly.
-- Compute shortest path with BFS.
+### Build the package
 
-## Reusable Module
+```bash
+python -m build
+```
 
-Reusable part: `mazegen/mazegen.py` with class `MazeGenerator`.
+This produces `mazegen-0.1.0.tar.gz` and `mazegen-0.1.0-py3-none-any.whl` in `dist/`.
 
-### Basic Example
+### Install the package
+
+```bash
+pip install mazegen-0.1.0.tar.gz
+```
+
+### Basic usage
 
 ```python
 from mazegen import MazeGenerator
 
 mg = MazeGenerator(
-		width=19,
-		height=17,
-		entry=(0, 0),
-		exit_=(13, 10),
-		perfect=True,
-		output_file="maze.txt",
-		seed=42,
+    width=13,
+    height=9,
+    entry=(0, 0),
+    exit_=(12, 8),
+    perfect=True,
+    output_file="maze.txt",
+    seed=42
 )
 
 grid, path = mg.generate()
-print(path)
+
+print(f"Path length: {len(path)} steps")
+print(f"Path: {''.join(path)}")
 ```
 
-### Custom Parameters
+### What's reusable
 
-- Size: `width`, `height`
-- Reproducibility: `seed`
-- Topology mode: `perfect`
-- Endpoints: `entry`, `exit_`
-- Output destination: `output_file`
-
-### Accessing Generated Data
-
-- `grid`: matrix of `Cell` objects with wall states (`N`, `E`, `S`, `W`).
-- `path`: shortest path directions as a list, for example `['E', 'E', 'S']`.
-- You can convert path directions to coordinates via `path_to_coords(path)`.
-
-## Team And Project Management
-
-### Team Roles
-
-- `mel-bakh`: everything other than display and parsing.
-- `zhamza`: display and parsing.
-
-### Initial Plan
-
-1. Parse and validate config input.
-2. Implement generation and output encoder.
-3. Add pathfinding.
-4. Add terminal UI and interactions.
-5. Add lint/build workflow and packaging.
-
-### How It Evolved
-
-- Added constraints handling ("42" pattern and 3x3 area fixes) after core generation worked.
-- Stabilized interactive rendering and usability after initial output format validation.
-- Packaging/layout work progressed in parallel with feature completion.
-
-### What Worked Well
-
-- Clear separation: parsing, generation, rendering.
-- Fast iteration using deterministic seeds.
-- Makefile targets helped keep workflows consistent.
-
-### What Could Be Improved
-
-- Increase automated test coverage (unit + integration tests).
-- Strengthen typing/docstrings consistency for strict linting.
-- Align package naming/versioning fully with subject naming expectations.
-
-### Tools Used
-
-- Python 3
-- Make
-- flake8
-- mypy
-- build
-- Git
-
-## Subject Coverage Notes
-
-- Main command: `python3 a_maze_ing.py config.txt`.
-- Config parsing includes mandatory fields and error handling.
-- Output includes encoded maze + entry/exit + shortest path.
-- Visual representation is terminal-based with required interactions.
-- Reusable generator class exists in `mazegen` package and is documented above.
+- `MazeGenerator` class — full maze generation pipeline
+- `mg.generate()` — returns `(grid, path)` where `grid` is the 2D cell structure and `path` is a list of directions (`N`, `E`, `S`, `W`) from entry to exit
+- Access to walls, locked cells (42 pattern), and the BFS solver are all exposed through the instance
 
 ## Resources
 
-### Maze Generation And Pathfinding
+Classic references used:
+- [Maze generation algorithms — Wikipedia](https://en.wikipedia.org/wiki/Maze_generation_algorithm)
+- [Recursive backtracker — Jamis Buck's blog](http://weblog.jamisbuck.org/2010/12/27/maze-generation-recursive-backtracking)
+- [BFS shortest path — GeeksforGeeks](https://www.geeksforgeeks.org/shortest-path-unweighted-graph/)
+- Python packaging user guide — [packaging.python.org](https://packaging.python.org/)
 
-- Jamis Buck, "Maze Generation: Recursive Backtracking": https://weblog.jamisbuck.org/2010/12/27/maze-generation-recursive-backtracking
-- Wikipedia, "Maze generation algorithm": https://en.wikipedia.org/wiki/Maze_generation_algorithm
-- Wikipedia, "Breadth-first search": https://en.wikipedia.org/wiki/Breadth-first_search
+### AI usage
 
-### Python Packaging And Quality
+AI was used as an assistant for:
+- Debugging wall encoding and neighbor relations
+- Structuring the `MazeGenerator` class and pipeline ordering
+- Reviewing config parser edge cases
+- Suggesting the `pyproject.toml` layout for the reusable package
 
-- Python Packaging User Guide: https://packaging.python.org/
-- PEP 8 Style Guide: https://peps.python.org/pep-0008/
-- PEP 257 Docstring Conventions: https://peps.python.org/pep-0257/
-- mypy documentation: https://mypy.readthedocs.io/
-- flake8 documentation: https://flake8.pycqa.org/
+All generated ideas were reviewed, tested, and rewritten in our own style before being integrated.
 
-### AI Usage Disclosure
+## Team and project management
 
-AI tools were used for:
+### Roles
+- **mel-bakh** — maze generation (DFS recursive backtracker), BFS shortest path, 42 pattern placement, output file writing, `mazegen` package
+- **zhamza** — config file parser (`parse.py`), terminal display and interactive menu (`display.py`)
 
-- drafting and improving documentation structure,
-- refining wording for explanations,
-- checking completeness against subject checklist.
+### Planning
 
-AI was not used as a blind copy-paste source; generated content was reviewed and adjusted to match the implemented code and project decisions.
+We started by splitting the project into two halves — generation logic vs. user interface and parsing — so we could work in parallel. Initial plan was one week, final integration took about three days extra for validation, error handling, and packaging.
+
+### What worked well
+- Clear separation between generation (`mazegen`) and presentation (`display`, `parse`)
+- Early agreement on data structures (`Cell` class, wall dictionary)
+- Testing each module in isolation before integration
+
+### What could be improved
+- More automated unit tests earlier
+- Earlier attention to flake8 and mypy compliance
+
+### Tools used
+- VS Code
+- Python `venv` for virtual environments
+- `poetry-core` + `build` for package building
+- `flake8` and `mypy` for linting
+- Git and GitHub for version control

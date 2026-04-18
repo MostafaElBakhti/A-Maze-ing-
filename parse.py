@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 VALID_KEYS = [
     'WIDTH',
@@ -11,8 +12,8 @@ VALID_KEYS = [
     ]
 
 
-def parse_config_file(config_file):
-    config = {}
+def parse_config_file(config_file: str) -> dict[str, Any]:
+    config: dict[str, Any] = {}
     try:
         with open(config_file, 'r') as file:
             lines = file.readlines()
@@ -51,7 +52,7 @@ def parse_config_file(config_file):
     return config
 
 
-def parse_width_height(config):
+def parse_width_height(config: dict[str, Any]) -> None:
     if 'WIDTH' in config and 'HEIGHT' in config:
         try:
             width = int(config['WIDTH'])
@@ -71,7 +72,7 @@ def parse_width_height(config):
         raise ValueError('the WIDTH or HEIGHT is missing.')
 
 
-def parse_entry_exit(config):
+def parse_entry_exit(config: dict[str, Any]) -> None:
     if 'ENTRY' in config and 'EXIT' in config:
         try:
             entry_parts = config['ENTRY'].split(',')
@@ -83,9 +84,6 @@ def parse_entry_exit(config):
             exit_parts = config['EXIT'].split(',')
             if len(exit_parts) != 2:
                 raise ValueError("Format error at EXIT. Use X,Y")
-
-            # if any(p != p.strip() for p in exit_parts):
-            #     raise ValueError("EXIT must be in format X,Y with no spaces")
 
             qx, qy = int(exit_parts[0]), int(exit_parts[1])
 
@@ -112,7 +110,7 @@ def parse_entry_exit(config):
         raise ValueError("ENTRY AND EXIT CAN'T BE THE SAME")
 
 
-def parse_file(config):
+def parse_file(config: dict[str, Any]) -> None:
     if "OUTPUT_FILE" not in config:
         raise ValueError("The OUTPUT_FILE key is missing.")
 
@@ -132,7 +130,7 @@ def parse_file(config):
         raise ValueError(f"No write permission for directory: {directory}")
 
 
-def parse_perfect(config):
+def parse_perfect(config: dict[str, Any]) -> None:
     if "PERFECT" not in config:
         raise ValueError("Error: PERFECT missing")
 
@@ -145,7 +143,7 @@ def parse_perfect(config):
         raise ValueError("PERFECT must be True or False.")
 
 
-def parse_seed(config):
+def parse_seed(config: dict[str, Any]) -> None:
     value = config.get('SEED')
     if not value or (isinstance(value, str) and value.lower() == "none"):
         config['SEED'] = None
@@ -162,7 +160,7 @@ def parse_seed(config):
                     config['SEED'] = value
 
 
-def get_config(config_file):
+def get_config(config_file: str) -> dict[str, Any]:
     config = parse_config_file(config_file)
     parse_width_height(config)
     parse_entry_exit(config)
