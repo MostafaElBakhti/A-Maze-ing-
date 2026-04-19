@@ -10,9 +10,12 @@ def print_maze(
     path: Optional[List[Any]] = None,
     show_path: bool = False,
     wall_color: str = "\033[94m",
+    path_color: str = "\033[96m",
+    path_wall_color: Optional[str] = None,
 ) -> None:
     COLOR_WALL = wall_color
-    COLOR_SOLUTION = "\033[96m"
+    COLOR_SOLUTION = path_color
+    COLOR_PATH_WALL = path_wall_color if path_wall_color else COLOR_SOLUTION
     COLOR_RESET = "\033[0m"
 
     TOP_LEFT = "╔"
@@ -38,12 +41,24 @@ def print_maze(
         else:
             path_coords = set(mg.path_to_coords(path))
 
-    print(COLOR_WALL + TOP_LEFT
-          + (H_LINE * 3 + T_DOWN) * (mg.width - 1)
-          + H_LINE * 3 + TOP_RIGHT + COLOR_RESET)
+    def touches_path(*cells: tuple[int, int]) -> bool:
+        return any(cell in path_coords for cell in cells)
+
+    def paint(symbol: str, highlight: bool = False) -> str:
+        color = COLOR_PATH_WALL if highlight else COLOR_WALL
+        return color + symbol + COLOR_RESET
+
+    top_row = paint(TOP_LEFT, touches_path((0, 0)))
+    for x in range(mg.width):
+        top_row += paint(H_LINE * 3, touches_path((x, 0)))
+        if x < mg.width - 1:
+            top_row += paint(T_DOWN, touches_path((x, 0), (x + 1, 0)))
+        else:
+            top_row += paint(TOP_RIGHT, touches_path((x, 0)))
+    print(top_row)
 
     for y in range(mg.height):
-        row = COLOR_WALL + V_LINE + COLOR_RESET
+        row = paint(V_LINE, touches_path((0, y)))
         for x in range(mg.width):
             cell = grid[y][x]
             if cell.locked:
@@ -58,32 +73,43 @@ def print_maze(
                 row += "   "
 
             if cell.walls["E"]:
-                row += COLOR_WALL + V_LINE + COLOR_RESET
+                if x < mg.width - 1:
+                    row += paint(V_LINE, touches_path((x, y), (x + 1, y)))
+                else:
+                    row += paint(V_LINE, touches_path((x, y)))
             else:
                 row += " "
         print(row)
 
         if y == mg.height - 1:
-            row = COLOR_WALL + BOT_LEFT + COLOR_RESET
+            row = paint(BOT_LEFT, touches_path((0, y)))
             for x in range(mg.width):
-                row += COLOR_WALL + H_LINE * 3 + COLOR_RESET
+                row += paint(H_LINE * 3, touches_path((x, y)))
                 if x < mg.width - 1:
-                    row += COLOR_WALL + T_UP + COLOR_RESET
+                    row += paint(T_UP, touches_path((x, y), (x + 1, y)))
                 else:
-                    row += COLOR_WALL + BOT_RIGHT + COLOR_RESET
+                    row += paint(BOT_RIGHT, touches_path((x, y)))
             print(row)
         else:
-            row = COLOR_WALL + T_RIGHT + COLOR_RESET
+            row = paint(T_RIGHT, touches_path((0, y), (0, y + 1)))
             for x in range(mg.width):
                 cell = grid[y][x]
                 if cell.walls["S"]:
-                    row += COLOR_WALL + H_LINE * 3 + COLOR_RESET
+                    row += paint(H_LINE * 3, touches_path((x, y), (x, y + 1)))
                 else:
                     row += "   "
                 if x < mg.width - 1:
-                    row += COLOR_WALL + CROSS + COLOR_RESET
+                    row += paint(
+                        CROSS,
+                        touches_path(
+                            (x, y),
+                            (x + 1, y),
+                            (x, y + 1),
+                            (x + 1, y + 1),
+                        ),
+                    )
                 else:
-                    row += COLOR_WALL + T_LEFT + COLOR_RESET
+                    row += paint(T_LEFT, touches_path((x, y), (x, y + 1)))
             print(row)
 
 
@@ -92,7 +118,8 @@ def animate_path(
     grid: List[List[Any]],
     path: List[Any],
     wall_color: str,
-    delay: float = 0.05,
+    path_wall_color: str = "\033[97m",
+    delay: float = 0.3,
 ) -> None:
     coords = mg.path_to_coords(path)
 
@@ -106,6 +133,7 @@ def animate_path(
             path=partial_path,
             show_path=True,
             wall_color=wall_color,
+            path_wall_color=path_wall_color,
         )
 
         time.sleep(delay)
@@ -117,6 +145,7 @@ def interactive_menu(
     path: Any,
 ) -> None:
     show_path = False
+    animation_path_wall_color = "\033[97m"
     colors = [
         "\033[94m",
         "\033[91m",
@@ -161,7 +190,8 @@ def interactive_menu(
                     mg,
                     grid,
                     path,
-                    wall_color=colors[color_index]
+                    wall_color=colors[color_index],
+                    path_wall_color=animation_path_wall_color,
                 )
                 input("Press Enter to continue...")
 
